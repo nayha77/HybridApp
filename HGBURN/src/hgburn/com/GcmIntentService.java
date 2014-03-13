@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -50,6 +51,7 @@ public class GcmIntentService extends IntentService {
 			.setContentText(msg);
 		
 		builder.setContentIntent(contentIntent);
+		
 		notificationManager.notify(NOTIFICATION_ID, builder.build());
 	}
 }

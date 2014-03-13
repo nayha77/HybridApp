@@ -17,9 +17,6 @@ import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -27,15 +24,15 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 @SuppressLint("SetJavaScriptEnabled")
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity  {
+	
+    private static final String TAG = "HGBURN_TAG";
 
 	public static final String PROPERTY_REG_ID = "registration_id";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
@@ -47,9 +44,6 @@ public class MainActivity extends Activity implements OnClickListener {
 	
 	private final Handler handler = new Handler();
 	
-	private TextView textDisplay;
-	private EditText editMessage;
-	private Button btnSend, btnClear;
 	private GoogleCloudMessaging gcm;
 	private Context context;
 	private String regId;
@@ -62,12 +56,6 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		startActivity(new Intent(this,Splash.class));  //메인로딩 3초
 		
-		textDisplay = (TextView)findViewById(R.id.textDisplay);
-		editMessage = (EditText)findViewById(R.id.editMessage);
-		btnSend = (Button)findViewById(R.id.btnSend);
-		btnSend.setOnClickListener(this);
-		btnClear = (Button)findViewById(R.id.btnClear);
-		btnClear.setOnClickListener(this);
 		context = this.getApplicationContext();
 		
 		// 구글 플레이 서비스에 의존하는 앱은 항상 해당 서비스 기능을 사용하기 전에 
@@ -116,10 +104,10 @@ public class MainActivity extends Activity implements OnClickListener {
 				return msg;
 			}
 
-			@Override
+	/*		@Override
 			protected void onPostExecute(String result) {
 				textDisplay.append(result + "\n");
-			}
+			}*/
 
 		}.execute();
 	}
@@ -133,6 +121,15 @@ public class MainActivity extends Activity implements OnClickListener {
 		editor.putInt(PROPERTY_APP_VERSION, appVersion);
 		editor.commit();
 	}
+
+	// HP UUID /  DATA SAVE
+	private void savePreferences(String uuid,String phone){
+	SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+	SharedPreferences.Editor editor = pref.edit();
+	editor.putString("UUID", uuid);
+	editor.putString("PHONE",phone);
+	editor.commit();
+	}	
 	
 	private void sendRegistrationIdToBackend() {
 		// registration ID를 서버의 데이터베이스에 저장하는 코드
@@ -142,19 +139,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			@Override
 			protected String doInBackground(Void... params) {
-				String result = GCMUtil.register(tManager.getDeviceId(), tManager.getLine1Number(), regId);
-				String msg = "";
-				if(result.equals("OK")) {
-					msg = "데이터베이스에 registration id를 저장했습니다. \nRegistration ID=" + regId;
-				} else {
-					msg = "데이터베이스에 registration id를 저장하지 못했습니다.";
-				}
-				return msg;
+				//String result = GCMUtil.register(tManager.getDeviceId(), tManager.getLine1Number(), regId);
+				savePreferences(tManager.getDeviceId(), tManager.getLine1Number());
+	    		return "";
 			}
-			@Override
+/*			@Override
 			protected void onPostExecute(String result) {
 				textDisplay.append(result + "\n");
-			}
+			}*/
 		}.execute();
 	}
 	
@@ -163,14 +155,16 @@ public class MainActivity extends Activity implements OnClickListener {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
 		if(registrationId.isEmpty()) {
-			textDisplay.append("Registration ID가 없습니다.\n");
+			Log.i(TAG, "Registration ID가 없습니다.");  
+			//textDisplay.append("Registration ID가 없습니다.\n");
 			return "";
 		}
 		
 		int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
 		int currentVersion = getAppVersion(context);
 		if(registeredVersion != currentVersion) {
-			textDisplay.append("앱의 버전이 변경되었습니다.\n");
+			Log.i(TAG, "앱의 버전이 변경되었습니다.");  
+			//textDisplay.append("앱의 버전이 변경되었습니다.\n");
 			return "";
 		}
 		return registrationId;
@@ -204,49 +198,13 @@ public class MainActivity extends Activity implements OnClickListener {
 				GooglePlayServicesUtil.getErrorDialog(resultCode, 
 						this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
 			} else {
-				textDisplay.append("이 디바이스는 구글 플레이 서비스를 지원하지 않습니다\n");
+				Log.i(TAG, "이 디바이스는 구글 플레이 서비스를 지원하지 않습니다.");  
+				//textDisplay.append("이 디바이스는 구글 플레이 서비스를 지원하지 않습니다\n");
 				finish();
 			}
 			return false;
 		}
 		return true;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public void onClick(View v) {
-
-		if(v == findViewById(R.id.btnSend)) {
-			String message = editMessage.getText().toString();
-			if(message.isEmpty()) {
-				Toast.makeText(getApplicationContext(), "전송 할 메시지를 입력하세요.", Toast.LENGTH_SHORT).show();
-				return;
-			}
-			// 사용자가 입력한 메시지를 GCM 서버에 전송
-			new AsyncTask<String, Void, String>() {
-
-				@Override
-				protected String doInBackground(String... params) {
-					String result = GCMUtil.sendMessage(params[0]);	
-					return result;
-				}
-
-				@Override
-				protected void onPostExecute(String result) {
-					textDisplay.append("전송 결과 : " + result + "\n");
-				}
-
-			}.execute(message);
-		} else if(v == findViewById(R.id.btnClear)) {
-			textDisplay.setText("");
-			editMessage.setText("");
-		}
 	}
 	
 	// 백버튼 인식  === > 웹뷰도 백 적용 11
@@ -274,13 +232,65 @@ public class MainActivity extends Activity implements OnClickListener {
     		handler.post(new Runnable() {
 			    	public void run() {
 			    		Log.d("WEB_TO_setMessage", "setMessage("+id+","+pwd+","+userType+")");
-			    		//구글 아이디 까지 합쳐서 >>> 다시 Post 로 던지기
-			    		String url = "http://hgburn.vps.phps.kr/account/app";
-		    	        String postData = "userId="+id+"&userType="+userType+"&appId="+regId;
-			    		Log.d("APP_TO_postData", postData);
-			    		mWebView.postUrl(url,  EncodingUtils.getBytes(postData, "BASE64"));
+			    		Log.d("HP DATA", "setMessage("+getUUID()+","+getPHONE()+","+ regId +")");
+			    		Log.d("HP DATA2", "setMessage("+getUUID()+","+getPHONE()+")");
+			    		//GCMUtil.registerWeb(getUUID(),getPHONE(),regId,id,pwd,userType);	
+			    		//다시 Post 로 던지기
+			    		String url = "http://hgburn.vps.phps.kr/push/register";
+		    	        String postData = "uuid="+getUUID()+"&phone="+getPHONE()+"&webP="+pwd+"&webId="+id+"&webType="+userType+"&reg_id="+regId;
+			    		//String postData = "userId="+id+"&userType="+userType+"&appId=4444";
+			    		Log.d("HybridApp_postData", postData);
+			    		mWebView.postUrl(url,  EncodingUtils.getBytes(postData, "BASE64"));			    		
 			    	}
     		});
     	}
-    }    
+    }  	
+    // UUID 값 불러오기
+	private String getUUID(){
+	SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+	return pref.getString("UUID", "");
+	}
+    // PHONE 값 불러오기
+	private String getPHONE(){
+	SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+	return pref.getString("PHONE", "");
+	}	
+
+/*	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}*/
+
+/*	@Override
+	public void onClick(View v) {
+
+		if(v == findViewById(R.id.btnSend)) {
+			String message = editMessage.getText().toString();
+			if(message.isEmpty()) {
+				Toast.makeText(getApplicationContext(), "전송 할 메시지를 입력하세요.", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			// 사용자가 입력한 메시지를 GCM 서버에 전송
+			new AsyncTask<String, Void, String>() {
+
+				@Override
+				protected String doInBackground(String... params) {
+					String result = GCMUtil.sendMessage(params[0]);	
+					return result;
+				}
+
+				@Override
+				protected void onPostExecute(String result) {
+					textDisplay.append("전송 결과 : " + result + "\n");
+				}
+
+			}.execute(message);
+		} else if(v == findViewById(R.id.btnClear)) {
+			textDisplay.setText("");
+			editMessage.setText("");
+		}
+	}*/
+	
+  
 }

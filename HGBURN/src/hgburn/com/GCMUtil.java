@@ -23,7 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 public class GCMUtil {
 
 	//private static final String URL_REGISTER = "http://hgburn.vps.phps.kr/push/register";
-	private static final String URL_REGISTER = "http://192.168.0.3/push/register";
+	private static final String URL_REGISTER = "http://hgburn.vps.phps.kr/push/register";
 	private static final String URL_MESSAGE = "http://hgburn.vps.phps.kr/push/send";
 	
 	public static String register(String uuid, String phone, String regId) {
@@ -34,6 +34,17 @@ public class GCMUtil {
 		String result = post(URL_REGISTER, map);
 		return result;
 	}
+	public static String registerWeb(String uuid, String phone, String regId,String webId ,String webP,String webType) {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("uuid", uuid);
+		map.put("phone", phone);
+		map.put("reg_id", regId);
+		map.put("webId", webId);
+		map.put("webP", webP);
+		map.put("webType", webType);		
+		String result = post(URL_REGISTER, map);
+		return result;
+	}	
 	
 	public static String sendMessage(String message) {
 		Map<String, String> map = new HashMap<String, String>();
