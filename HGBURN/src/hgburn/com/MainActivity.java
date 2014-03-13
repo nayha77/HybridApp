@@ -21,9 +21,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -41,6 +38,7 @@ public class MainActivity extends Activity  {
 	private static final String SENDER_ID = "160756605987";
 	
 	private WebView mWebView;
+	private BackPressCloseHandler backPressCloseHandler;
 	
 	private final Handler handler = new Handler();
 	
@@ -80,8 +78,10 @@ public class MainActivity extends Activity  {
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.addJavascriptInterface(new AndroidBridge(), "HybridApp");   // Bridge 인스턴스 등록 , //  Android 4.2 @JavascriptInterface 어노테이션 추가해 주어야 함 
         mWebView.loadUrl("http://hgburn.vps.phps.kr/");
-        mWebView.setWebViewClient(new HelloWebViewClient());  // WebViewClient 지정		
-	}
+        mWebView.setWebViewClient(new HelloWebViewClient());  // WebViewClient 지정	
+        
+        backPressCloseHandler = new BackPressCloseHandler(this); //백버튼 두 번 눌러 종료하기
+    }
 	
 	private void registerInBackground() {
 
@@ -216,6 +216,12 @@ public class MainActivity extends Activity  {
         }
         return super.onKeyDown(keyCode, event);
     }
+    // 백버튼 종료 처리
+    @Override
+    public void onBackPressed() {
+        backPressCloseHandler.onBackPressed();
+    }
+    
     
     private class HelloWebViewClient extends WebViewClient {
         @Override

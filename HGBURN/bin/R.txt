@@ -67,7 +67,9 @@ int id terrain 0x7f050003
 int id webview 0x7f050005
 int integer google_play_services_version 0x7f070000
 int layout activity_main 0x7f030000
-int layout splash 0x7f030001
+int layout fadein 0x7f030001
+int layout fadeout 0x7f030002
+int layout splash 0x7f030003
 int menu main 0x7f0a0000
 int string action_settings 0x7f06001b
 int string app_name 0x7f06001a
