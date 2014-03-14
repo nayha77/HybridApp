@@ -3,5 +3,5 @@
 
     <string name="app_name">HGBURN_1.0</string>
     <string name="action_settings">Settings</string>
-
+	<color  name="splashcolor">#41828D</color>
 </resources>

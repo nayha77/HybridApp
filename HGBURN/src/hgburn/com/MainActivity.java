@@ -69,7 +69,7 @@ public class MainActivity extends Activity  {
 				registerInBackground();
 			} 
 			// 웹 애플리케이션에서 해당 registration ID를 삭제했을 경우가 있으므로
-			// 앱이 새로 시작될 때마다 registration ID를 웹 애플리케이션에 재전송함.
+			// 앱이 새로 시작될 때마다 registration ID를 웹 sendRegistrationIdToBackend 에 재전송함.
 			sendRegistrationIdToBackend();
 		}
 		
@@ -132,7 +132,7 @@ public class MainActivity extends Activity  {
 	}	
 	
 	private void sendRegistrationIdToBackend() {
-		// registration ID를 서버의 데이터베이스에 저장하는 코드
+		// registration ID를 savePreferences 에 저장하는 코드
 		tManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
 		
 		new AsyncTask<Void, Void, String>() {
@@ -237,9 +237,6 @@ public class MainActivity extends Activity  {
     	public void setMessage(final String id,final String pwd,final String userType) { 
     		handler.post(new Runnable() {
 			    	public void run() {
-			    		Log.d("WEB_TO_setMessage", "setMessage("+id+","+pwd+","+userType+")");
-			    		Log.d("HP DATA", "setMessage("+getUUID()+","+getPHONE()+","+ regId +")");
-			    		Log.d("HP DATA2", "setMessage("+getUUID()+","+getPHONE()+")");
 			    		//GCMUtil.registerWeb(getUUID(),getPHONE(),regId,id,pwd,userType);	
 			    		//다시 Post 로 던지기
 			    		String url = "http://hgburn.vps.phps.kr/push/register";
