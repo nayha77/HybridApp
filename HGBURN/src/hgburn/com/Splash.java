@@ -21,7 +21,7 @@ public class Splash extends Activity{
 	                //페이드 인 페이드 아웃 효과 res/anim/fadein, fadeout xml을 만들어 줘야 합니다.
 	        		overridePendingTransition(R.layout.fadein, R.layout.fadeout);	                
 	            }
-	        }, 2000);		
+	        }, 3000);		
 	       	        
 	}
 	 public void onBackPressed(){} //splash 이미지 띄우는 과정에 백 버튼을 누를 수도 있다. 백버튼 막기

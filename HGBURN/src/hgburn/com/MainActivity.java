@@ -6,11 +6,15 @@ import org.apache.http.util.EncodingUtils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,10 +51,46 @@ public class MainActivity extends Activity  {
 	private String regId;
 	private TelephonyManager tManager;
 	
+
+	public boolean isNetworkConnected(Context context){
+	    boolean isConnected = false;
+
+	    ConnectivityManager manager = 
+	        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo mobile = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+	    NetworkInfo wifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+	    if (mobile.isConnected() || wifi.isConnected()){
+	        isConnected = true;
+	    }else{
+	        isConnected = false;
+	    }
+	    return isConnected;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		if( !isNetworkConnected(this) ){
+		    new AlertDialog.Builder(this)
+		    .setIcon(android.R.drawable.ic_dialog_alert)
+		    .setTitle("네트워크 연결 오류").setMessage("네트워크 연결 상태 확인 후 다시 시도해 주십시요.")
+		    .setPositiveButton("확인", new DialogInterface.OnClickListener()
+		    {
+		        @Override
+		        public void onClick( DialogInterface dialog, int which )
+		        {
+		            finish();
+		        }
+		    }).show();
+		    
+		    startActivity(new Intent(this,Splash.class));  //메인로딩 3초
+		    
+		    return;
+		} 
 		
 		startActivity(new Intent(this,Splash.class));  //메인로딩 3초
 		
@@ -77,7 +117,15 @@ public class MainActivity extends Activity  {
         mWebView.getSettings().setJavaScriptEnabled(true); // 웹뷰에서 자바스크립트실행가능
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.addJavascriptInterface(new AndroidBridge(), "HybridApp");   // Bridge 인스턴스 등록 , //  Android 4.2 @JavascriptInterface 어노테이션 추가해 주어야 함 
-        mWebView.loadUrl("http://hgburn.vps.phps.kr/");
+        
+        String url = "http://nayha.dlinkddns.com/";
+        Bundle extras = getIntent().getExtras();
+        
+        if(extras != null)
+        	url = extras.getString("url");        
+        	
+        mWebView.loadUrl(url);
+        Log.i(TAG, "====url=" + url);	
         mWebView.setWebViewClient(new HelloWebViewClient());  // WebViewClient 지정	
         
         backPressCloseHandler = new BackPressCloseHandler(this); //백버튼 두 번 눌러 종료하기
@@ -294,6 +342,7 @@ public class MainActivity extends Activity  {
 			editMessage.setText("");
 		}
 	}*/
-	
+
+
   
 }

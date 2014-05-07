@@ -19,6 +19,6 @@
         android:textColor="#454545"
         android:gravity="center_horizontal"
         android:layout_alignParentBottom="true"
-        android:text="www.hgburn.com" />
+        android:text="www.vavacar.com" />
  
 </RelativeLayout>
